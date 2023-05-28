@@ -1,0 +1,153 @@
+---
+title: Definitions
+date: today
+---
+
+
+# Main functions
+
+We overall interact with two functions, $\ell$ and $g$, which are defined as 
+
+$$\ell(t)\triangleq -\alpha t + \beta\qquad\text{for some}\;\alpha,\beta > 0$$
+
+and
+
+$$g(t)\triangleq \eta\exp\left( \;-\sigma \; t\;\right)\qquad\text{for some}\; \eta, \sigma > 0$$
+
+these functions serve as a proxy to define a third function, called "switch" or $\mathrm{S}_\boldsymbol{\theta}$, which is defined as
+
+$$\mathrm{S}_\boldsymbol{\theta}(t) =
+\begin{cases}
+\ell_\boldsymbol{\theta}(t)&\text{if}\;t\leq t_s\\
+g_\boldsymbol{\theta}(t) & \text{if}\;t> t_s 
+\end{cases}
+$$
+
+where $\boldsymbol{\theta}$ is a vector parameter storing all variables of interest:
+
+$$\boldsymbol{\theta} \triangleq \left(\alpha, \beta, \eta, \sigma, t_s\right)$$
+
+# Variables
+
+| Variable | Description |
+| --- | --- |
+| $\alpha$ | The rate of change of the linear function |
+| $\beta$ | The initial value of the linear function |
+| $\eta$ | The amplitude of the exponential function |
+| $\sigma$ |  The rate of decay of the exponential function |
+| $t_s$ | The time at which the switch function changes from linear to exponential |
+
+# Relationships between the variables
+
+From the continuity assumption, we get
+
+$$\ell(t_s) = g(t_s)$$
+
+and
+
+$$\ell'(t_s) = g'(t_s)$$
+
+which provides for the equations
+
+$$-\alpha t_s+ \beta = \eta \exp(-\sigma\cdot t_s)$$ and 
+$$\alpha = \sigma\eta\exp(-\sigma\cdot t_s)$$
+
+## Derivation of key quantities
+
+To avoid the occasionnal handwriting mistake, we can symbollically solve the arithmetic using symbolic programming:
+
+### Substitutions
+
+```{python}
+from sympy import *
+
+α, β, σ, η = symbols('α β σ η', positive=True)
+
+t_s, T_L, T_0 = symbols('t_s T_L T_0', positive=True)
+
+
+eqns = [
+    -α * t_s+ β - η * exp(- σ * t_s),
+    α - σ * η * exp(-σ * t_s),
+]
+init_printing()
+sols = solve(eqns, [t_s]).pop()
+sols[0]
+```
+
+Whence from substitution we get
+
+$$-\alpha t_s + \beta = \eta \exp\left(-\sigma\log\left(\left(\dfrac{\eta\sigma}{\alpha}\right)^{1/\sigma}\right)\right) = \eta \dfrac{\alpha}{\eta\sigma}$$
+
+which implies
+
+$$t_s = \dfrac{\beta}{\alpha} - \dfrac1\sigma =  \beta\alpha^{-1} - \sigma^{-1}$$
+
+
+### Integration
+
+We can even solve the intergral symbollically to avoid silly mistakes
+```{python}
+t = symbols('t')
+
+conds = [
+    (t_s > T_0, True), (t_s < T_L, True),
+    (T_0 < T_L, True), (t < T_L, True),
+    (t > T_0, True)
+]
+
+lS = Piecewise((-α*t+β, True), *conds)
+rS = Piecewise((η * exp(-σ * t), True), *conds)
+total = lS.integrate((t,T_0, t_s)).doit() + rS.integrate((t, t_s, T_L)).doit()
+expand(expand_log(powsimp(total.subs(t_s, β/α- 1/σ))))
+```
+
+
+Whence the integral we care about
+
+
+$$\int_{T_0}^{T_\text{L}}\mathrm{S}_\boldsymbol{\theta}(t)\mathrm{d}t
+\leq \mathrm{B}
+\iff  \int_{T_0}^{t_s}\ell_\boldsymbol{\theta}(t)\mathrm{d}t + \int_{t_s}^{T_\text{L}}g_\boldsymbol{\theta}(t)\mathrm{d}t \leq \mathrm{B}$$
+
+A final simplification is
+$$\alpha = \sigma\eta\exp(-\sigma\beta\alpha^{-1} + \sigma\sigma^{-1} ) = \sigma\eta\exp(1- \sigma\beta\alpha^{-1} ) $$
+
+Our final expression for the cost is
+
+$$
+\displaystyle \frac{T_{0}^{2} α}{2} - T_{0} β - \frac{α}{2 σ^{2}} + \frac{\alpha  }{σ^2} - \frac{η e^{- T_{L} σ}}{σ} + \frac{β^{2}}{2 α}
+$$
+
+
+### Derivatives
+
+What might be of important in scenario is that the acceleration shouldn't be too steep. That means spread the effort enough that we do not need to "accelerate" too suddenly. This means the $\mathrm{L}_2$ norm of the acceletation wrt $t$ of $\mathrm{S}_\boldsymbol{\theta}(t)$ should be low.
+
+$$\displaystyle\int_{T_0}^{T_\text{L}}\left|\dfrac{\partial}{\partial t^2}\mathrm{S}_\boldsymbol{\theta}(t)\right|^2\mathrm{d}t = \left\lVert\dfrac{\partial}{\partial t^2}\mathrm{S}_\boldsymbol{\theta}\right\rVert \ll K \qquad\text{for some }\; K > 0$$
+
+Since the linear function has curvature zero, we only care about the $t > t_s$ case
+
+$$\dfrac{\partial}{\partial t^2} \eta\exp(-\sigma\cdot t) = \eta\sigma^2\exp(-\sigma\cdot t)$$
+
+finally,
+
+$$
+\begin{aligned}
+\left\lVert\dfrac{\partial}{\partial t^2}\mathrm{S}_\boldsymbol{\theta}\right\rVert &= \eta^2\sigma^4\displaystyle\int_{t_s}^{T_\text{L}}\exp(-2\sigma\cdot t)\,\mathrm{d}t \\
+& = -\dfrac12\sigma^{-1}\eta^2\sigma^4\left[\exp(-2\sigma T_\text{L}) - \exp(-2\sigma t_s)\right]\\
+& = -\dfrac12\sigma^{-1}\eta^2\sigma^4\left[\exp(-2\sigma T_\text{L}) - \dfrac{\alpha^2}{\eta^2\sigma^2}\right] \\
+&= -\dfrac12\sigma^{-1}\eta^2\sigma^4\exp(-2\sigma T_\text{L}) + \dfrac12 \eta^2\sigma\alpha^2
+\end{aligned}
+$$
+
+
+## Relationships
+
+| Number | Variables | Expression |
+| --- | --- | --- |
+| 1 | $t_s$ | $-\frac{1}{\sigma}\ln\left(\frac{\alpha}{\eta\sigma}\right)$ |
+| 2 | $\exp(-\sigma \cdot t_s)$ | $\dfrac{\alpha}{\eta\sigma}$ |
+| 3 | $t_s$ | $\dfrac{\eta}{\sigma}\exp(-\sigma \cdot t_s)$ |
+| 4 | $\displaystyle\int_{T_0}^{T_\text{L}}\mathrm{S}_\boldsymbol{\theta}(t)\mathrm{d}t$ | $\frac{T_{0}^{2} α}{2} - T_{0} β - \frac{α}{2 σ^{2}} + \frac{\alpha  }{σ^2} - \frac{η e^{- T_{L} σ}}{σ} + \frac{β^{2}}{2 α}$ |
+| 5 | $\left\lVert\dfrac{\partial}{\partial t^2}\mathrm{S}_\boldsymbol{\theta}\right\rVert$ | $-\dfrac12\sigma^{-1}\eta^2\sigma^4\exp(-2\sigma T_\text{L}) + \dfrac12 \eta^2\sigma\alpha^2$ |

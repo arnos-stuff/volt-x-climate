@@ -1,0 +1,86 @@
+[
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site\n\n\n\n Back to top"
+  },
+  {
+    "objectID": "definitions.html",
+    "href": "definitions.html",
+    "title": "Definitions",
+    "section": "",
+    "text": "We overall interact with two functions, \\(\\ell\\) and \\(g\\), which are defined as\n\\[\\ell(t)\\triangleq -\\alpha t + \\beta\\qquad\\text{for some}\\;\\alpha,\\beta &gt; 0\\]\nand\n\\[g(t)\\triangleq \\eta\\exp\\left( \\;-\\sigma \\; t\\;\\right)\\qquad\\text{for some}\\; \\eta, \\sigma &gt; 0\\]\nthese functions serve as a proxy to define a third function, called “switch” or \\(\\mathrm{S}_\\boldsymbol{\\theta}\\), which is defined as\n\\[\\mathrm{S}_\\boldsymbol{\\theta}(t) =\n\\begin{cases}\n\\ell_\\boldsymbol{\\theta}(t)&\\text{if}\\;t\\leq t_s\\\\\ng_\\boldsymbol{\\theta}(t) & \\text{if}\\;t&gt; t_s\n\\end{cases}\n\\]\nwhere \\(\\boldsymbol{\\theta}\\) is a vector parameter storing all variables of interest:\n\\[\\boldsymbol{\\theta} \\triangleq \\left(\\alpha, \\beta, \\eta, \\sigma, t_s\\right)\\]"
+  },
+  {
+    "objectID": "definitions.html#derivation-of-key-quantities",
+    "href": "definitions.html#derivation-of-key-quantities",
+    "title": "Definitions",
+    "section": "Derivation of key quantities",
+    "text": "Derivation of key quantities\nTo avoid the occasionnal handwriting mistake, we can symbollically solve the arithmetic using symbolic programming:\n\nSubstitutions\n\n\nCode\nfrom sympy import *\n\nα, β, σ, η = symbols('α β σ η', positive=True)\n\nt_s, T_L, T_0 = symbols('t_s T_L T_0', positive=True)\n\n\neqns = [\n    -α * t_s+ β - η * exp(- σ * t_s),\n    α - σ * η * exp(-σ * t_s),\n]\ninit_printing()\nsols = solve(eqns, [t_s]).pop()\nsols[0]\n\n\n\\(\\displaystyle \\log{\\left(\\left(\\frac{η σ}{α}\\right)^{\\frac{1}{σ}} \\right)}\\)\n\n\nWhence from substitution we get\n\\[-\\alpha t_s + \\beta = \\eta \\exp\\left(-\\sigma\\log\\left(\\left(\\dfrac{\\eta\\sigma}{\\alpha}\\right)^{1/\\sigma}\\right)\\right) = \\eta \\dfrac{\\alpha}{\\eta\\sigma}\\]\nwhich implies\n\\[t_s = \\dfrac{\\beta}{\\alpha} - \\dfrac1\\sigma =  \\beta\\alpha^{-1} - \\sigma^{-1}\\]\n\n\nIntegration\nWe can even solve the intergral symbollically to avoid silly mistakes\n\n\nCode\nt = symbols('t')\n\nconds = [\n    (t_s &gt; T_0, True), (t_s &lt; T_L, True),\n    (T_0 &lt; T_L, True), (t &lt; T_L, True),\n    (t &gt; T_0, True)\n]\n\nlS = Piecewise((-α*t+β, True), *conds)\nrS = Piecewise((η * exp(-σ * t), True), *conds)\ntotal = lS.integrate((t,T_0, t_s)).doit() + rS.integrate((t, t_s, T_L)).doit()\nexpand(expand_log(powsimp(total.subs(t_s, β/α- 1/σ))))\n\n\n\\(\\displaystyle \\frac{T_{0}^{2} α}{2} - T_{0} β - \\frac{α}{2 σ^{2}} + \\frac{e η e^{- \\frac{β σ}{α}}}{σ} - \\frac{η e^{- T_{L} σ}}{σ} + \\frac{β^{2}}{2 α}\\)\n\n\nWhence the integral we care about\n\\[\\int_{T_0}^{T_\\text{L}}\\mathrm{S}_\\boldsymbol{\\theta}(t)\\mathrm{d}t\n\\leq \\mathrm{B}\n\\iff  \\int_{T_0}^{t_s}\\ell_\\boldsymbol{\\theta}(t)\\mathrm{d}t + \\int_{t_s}^{T_\\text{L}}g_\\boldsymbol{\\theta}(t)\\mathrm{d}t \\leq \\mathrm{B}\\]\nA final simplification is \\[\\alpha = \\sigma\\eta\\exp(-\\sigma\\beta\\alpha^{-1} + \\sigma\\sigma^{-1} ) = \\sigma\\eta\\exp(1- \\sigma\\beta\\alpha^{-1} ) \\]\nOur final expression for the cost is\n\\[\n\\displaystyle \\frac{T_{0}^{2} α}{2} - T_{0} β - \\frac{α}{2 σ^{2}} + \\frac{\\alpha  }{σ^2} - \\frac{η e^{- T_{L} σ}}{σ} + \\frac{β^{2}}{2 α}\n\\]\n\n\nDerivatives\nWhat might be of important in scenario is that the acceleration shouldn’t be too steep. That means spread the effort enough that we do not need to “accelerate” too suddenly. This means the \\(\\mathrm{L}_2\\) norm of the acceletation wrt \\(t\\) of \\(\\mathrm{S}_\\boldsymbol{\\theta}(t)\\) should be low.\n\\[\\displaystyle\\int_{T_0}^{T_\\text{L}}\\left|\\dfrac{\\partial}{\\partial t^2}\\mathrm{S}_\\boldsymbol{\\theta}(t)\\right|^2\\mathrm{d}t = \\left\\lVert\\dfrac{\\partial}{\\partial t^2}\\mathrm{S}_\\boldsymbol{\\theta}\\right\\rVert \\ll K \\qquad\\text{for some }\\; K &gt; 0\\]\nSince the linear function has curvature zero, we only care about the \\(t &gt; t_s\\) case\n\\[\\dfrac{\\partial}{\\partial t^2} \\eta\\exp(-\\sigma\\cdot t) = \\eta\\sigma^2\\exp(-\\sigma\\cdot t)\\]\nfinally,\n\\[\n\\begin{aligned}\n\\left\\lVert\\dfrac{\\partial}{\\partial t^2}\\mathrm{S}_\\boldsymbol{\\theta}\\right\\rVert &= \\eta^2\\sigma^4\\displaystyle\\int_{t_s}^{T_\\text{L}}\\exp(-2\\sigma\\cdot t)\\,\\mathrm{d}t \\\\\n& = -\\dfrac12\\sigma^{-1}\\eta^2\\sigma^4\\left[\\exp(-2\\sigma T_\\text{L}) - \\exp(-2\\sigma t_s)\\right]\\\\\n& = -\\dfrac12\\sigma^{-1}\\eta^2\\sigma^4\\left[\\exp(-2\\sigma T_\\text{L}) - \\dfrac{\\alpha^2}{\\eta^2\\sigma^2}\\right] \\\\\n&= -\\dfrac12\\sigma^{-1}\\eta^2\\sigma^4\\exp(-2\\sigma T_\\text{L}) + \\dfrac12 \\eta^2\\sigma\\alpha^2\n\\end{aligned}\n\\]"
+  },
+  {
+    "objectID": "definitions.html#relationships",
+    "href": "definitions.html#relationships",
+    "title": "Definitions",
+    "section": "Relationships",
+    "text": "Relationships\n\n\n\n\n\n\n\n\nNumber\nVariables\nExpression\n\n\n\n\n1\n\\(t_s\\)\n\\(-\\frac{1}{\\sigma}\\ln\\left(\\frac{\\alpha}{\\eta\\sigma}\\right)\\)\n\n\n2\n\\(\\exp(-\\sigma \\cdot t_s)\\)\n\\(\\dfrac{\\alpha}{\\eta\\sigma}\\)\n\n\n3\n\\(t_s\\)\n\\(\\dfrac{\\eta}{\\sigma}\\exp(-\\sigma \\cdot t_s)\\)\n\n\n4\n\\(\\displaystyle\\int_{T_0}^{T_\\text{L}}\\mathrm{S}_\\boldsymbol{\\theta}(t)\\mathrm{d}t\\)\n\\(\\frac{T_{0}^{2} α}{2} - T_{0} β - \\frac{α}{2 σ^{2}} + \\frac{\\alpha }{σ^2} - \\frac{η e^{- T_{L} σ}}{σ} + \\frac{β^{2}}{2 α}\\)\n\n\n5\n\\(\\left\\lVert\\dfrac{\\partial}{\\partial t^2}\\mathrm{S}_\\boldsymbol{\\theta}\\right\\rVert\\)\n\\(-\\dfrac12\\sigma^{-1}\\eta^2\\sigma^4\\exp(-2\\sigma T_\\text{L}) + \\dfrac12 \\eta^2\\sigma\\alpha^2\\)"
+  },
+  {
+    "objectID": "data.html",
+    "href": "data.html",
+    "title": "Data & Analysis",
+    "section": "",
+    "text": "The data comes from IPCC reports and has been gathered from the IPCC’s website"
+  },
+  {
+    "objectID": "data.html#raw-data",
+    "href": "data.html#raw-data",
+    "title": "Data & Analysis",
+    "section": "Raw data",
+    "text": "Raw data\n\nVolt gathered data\nHere’s the original data from the Volt Repo: (Unit= GtCO2)\n\n\nCode\nimport pandas as pd\n\ndf = pd.read_json(\"https://storage.googleapis.com/open.data.arnov.dev/volt/climate/data/ipcc-data.json\")\ndf\n\n\n\n\n\n\n\n\n\nname\nsource\nyear\nbudgetEstimation\ntarget\n\n\n\n\n0\nIPCC-AR6 - 67% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n400\n1.5\n\n\n1\nIPCC-AR6 - 83% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n300\n1.5\n\n\n2\nIPCC-AR6 - 50% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n500\n1.5\n\n\n3\nIPCC-AR6 - 33% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n650\n1.5\n\n\n4\nIPCC-AR6 - 17% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n900\n1.5\n\n\n5\nIPCC-AR6 - 67% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n700\n1.7\n\n\n6\nIPCC-AR6 - 83% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n550\n1.7\n\n\n7\nIPCC-AR6 - 50% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n850\n1.7\n\n\n8\nIPCC-AR6 - 33% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n1050\n1.7\n\n\n9\nIPCC-AR6 - 17% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n1450\n1.7\n\n\n10\nIPCC-AR6 - 67% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n1150\n2.0\n\n\n11\nIPCC-AR6 - 83% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n900\n2.0\n\n\n12\nIPCC-AR6 - 50% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n1350\n2.0\n\n\n13\nIPCC-AR6 - 33% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n1750\n2.0\n\n\n14\nIPCC-AR6 - 17% probability\nhttps://www.ipcc.ch/report/ar6/wg1/#SPM\n2020.000\n2300\n2.0\n\n\n15\nCarbon Brief - 67% probability\nhttps://www.carbonbrief.org/guest-post-refinin...\n2020.000\n230\n1.5\n\n\n16\nCarbon Brief - 50% probability\nhttps://www.carbonbrief.org/guest-post-refinin...\n2020.000\n440\n1.5\n\n\n17\nCarbon Brief - 33% probability\nhttps://www.carbonbrief.org/guest-post-refinin...\n2020.000\n670\n1.5\n\n\n18\nIPCC-AR5 66% Probability\nhttps://www.ipcc.ch/sr15/chapter/spm/spm-c/\n2018.000\n420\n1.5\n\n\n19\nIPCC-AR5 50% Probability\nhttps://www.ipcc.ch/sr15/chapter/spm/spm-c/\n2018.000\n580\n1.5\n\n\n20\nIPCC-GMST 50% Probability\nhttps://www.ipcc.ch/sr15/chapter/spm/spm-c/\n2018.000\n770\n1.5\n\n\n21\nIPCC-GMST 66% Probability\nhttps://www.ipcc.ch/sr15/chapter/spm/spm-c/\n2018.000\n570\n1.5\n\n\n22\nMercator Research Institute\nhttps://www.mcc-berlin.net/en/research/co2-bud...\n2019.761\n1100\n2.0\n\n\n\n\n\n\n\n\n\nIPCC source data\nNow the data straight from the IPCC: (Unit= GtCO2)\n\n\nCode\nimport pandas as pd\n\ndata = pd.read_json(\"https://storage.googleapis.com/open.data.arnov.dev/volt/climate/data/ipcc-table.json\", orient='table')\ndata\n\n::: {#ipcc-source-data-(unit-gtco2 .cell-output .cell-output-display execution_count=2}\n\n\n\n\n\n\n\nPercent Chance to reach Goal\nTotal Carbon Budget\nDegree Target\n\n\n\n\n0\n17%\n900\n1.5\n\n\n1\n17%\n1450\n1.7\n\n\n2\n17%\n2300\n1.8\n\n\n3\n33%\n650\n1.5\n\n\n4\n33%\n1050\n1.7\n\n\n5\n33%\n1700\n1.8\n\n\n6\n50%\n500\n1.5\n\n\n7\n50%\n850\n1.7\n\n\n8\n50%\n1350\n1.8\n\n\n9\n67%\n400\n1.5\n\n\n10\n67%\n700\n1.7\n\n\n11\n67%\n1150\n1.8\n\n\n12\n83%\n300\n1.5\n\n\n13\n83%\n550\n1.7\n\n\n14\n83%\n900\n1.8\n\n\n\n\n\n\n:::\n\n\nIPCC Annual emissions per country\n\n\nCode\nimport pandas as pd\n\n\ndf = pd.read_csv(\"https://storage.googleapis.com/open.data.arnov.dev/volt/climate/data/annual-co2-emissions-per-country.csv\")\ndf\n\n\n\n\n\n\n\n\n\nEntity\nCode\nYear\nAnnual CO₂ emissions\n\n\n\n\n0\nAfghanistan\nAFG\n1949\n14656.0\n\n\n1\nAfghanistan\nAFG\n1950\n84272.0\n\n\n2\nAfghanistan\nAFG\n1951\n91600.0\n\n\n3\nAfghanistan\nAFG\n1952\n91600.0\n\n\n4\nAfghanistan\nAFG\n1953\n106256.0\n\n\n...\n...\n...\n...\n...\n\n\n31344\nZimbabwe\nZWE\n2017\n9596071.0\n\n\n31345\nZimbabwe\nZWE\n2018\n11795478.0\n\n\n31346\nZimbabwe\nZWE\n2019\n11114607.0\n\n\n31347\nZimbabwe\nZWE\n2020\n10607897.0\n\n\n31348\nZimbabwe\nZWE\n2021\n11296114.0\n\n\n\n\n31349 rows × 4 columns"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Volt Europa X Climate Modelling",
+    "section": "",
+    "text": "This small website aims to replicate and extend the works from Volt Europa on assessing how fast one should decrease our emissions.\nThe github repo hosting the information can be found here"
+  },
+  {
+    "objectID": "index.html#data-analysis",
+    "href": "index.html#data-analysis",
+    "title": "Volt Europa X Climate Modelling",
+    "section": "Data analysis",
+    "text": "Data analysis\nPlease check out the Data page"
+  },
+  {
+    "objectID": "index.html#modelling-choices",
+    "href": "index.html#modelling-choices",
+    "title": "Volt Europa X Climate Modelling",
+    "section": "Modelling choices",
+    "text": "Modelling choices\n\nDerivations and variables\nSee the Definitions pages\n\n\nModel\nSee the Model page\n\n\nResults\nSee the Results page"
+  },
+  {
+    "objectID": "data.html#distribution-of",
+    "href": "data.html#distribution-of",
+    "title": "Data & Analysis",
+    "section": "Distribution of",
+    "text": "Distribution of"
+  },
+  {
+    "objectID": "data.html#distribution-of-projections",
+    "href": "data.html#distribution-of-projections",
+    "title": "Data & Analysis",
+    "section": "Distribution of projections",
+    "text": "Distribution of projections"
+  },
+  {
+    "objectID": "data.html#distribution-of-ipcc-projections",
+    "href": "data.html#distribution-of-ipcc-projections",
+    "title": "Data & Analysis",
+    "section": "Distribution of IPCC projections",
+    "text": "Distribution of IPCC projections\n\n\nCode\nimport pandas as pd\n\ncolumns = [\n    'Budget',   'Degree', 'name', 'score',\n    'bootstrap_score', 'bootstrap_pass',\n    'loc', 'scale', 'arg'\n    ]\n\n\ndf = pd.read_csv(\"https://storage.googleapis.com/open.data.arnov.dev/volt/climate/data/fit-percent-goal-results.csv.zip\")\ndf[columns].dropna(subset=['name']).style \\\n    .apply(lambda row: row['color'], axis=1, subset=['bootstrap_pass']) \\\n    .apply(lambda color: f'background-color: {color}', axis=1) \\\n    .set_caption('Distribution of IPCC projections')\n\n\nKeyError: 'color'\n\n\n&lt;pandas.io.formats.style.Styler at 0x7fc947194ad0&gt;"
+  }
+]

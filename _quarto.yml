@@ -1,0 +1,75 @@
+project:
+  type: website
+
+
+website:
+  title: "Volt x Climate"
+  page-navigation: true
+  search: true
+  reader-mode: true
+  back-to-top-navigation: true
+  favicon: assets/eu-planet.ico
+  page-footer: Made with 💜 by Shae/Arno
+  twitter-card:
+    title: Volt X Climate
+    description: An analysis of Volt's Climate model
+    image: assets/volt-banner-UHD.png
+    creator: "@shae_arno"
+    site: "@shae_arno"
+  comments:
+    hypothesis:
+      theme: clean
+      openSidebar: false
+
+  navbar:
+    left:
+    - href: index.qmd
+      text: Home
+    - href: definitions.qmd
+      text: Definitions
+    - href: about.qmd
+      text: About
+    logo: assets/eu-planet.ico
+    background: "#7800bd"
+    pinned: true
+    right:
+    - icon: twitter
+      href: https://twitter.com/arno_shae
+    - icon: github
+      menu:
+      - text: Source Code
+        url: https://github.com/arnos-stuff/volt-x-climate
+      - text: Original Repo
+        url: https://github.com/FelixBenning/EmissionModel
+      - href: https://www.ipcc.ch/report/ar6/wg2/
+        icon: assets/IPCC.svg
+        text: Source
+
+
+
+
+
+format:
+  html:
+    theme: journal
+    highlight: tango
+    css: styles.css
+    toc: true
+    page-layout: full
+
+code-fold: true
+code-copy: true
+
+
+bibliography: bibliography.bib
+
+reference:
+- id: vol
+
+output:
+  distill::distill_article:
+    self_contained: true
+    highlight: tango
+    css: styles.css
+    toc: true
+    toc_float: collapsed

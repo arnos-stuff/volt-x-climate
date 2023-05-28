@@ -1,0 +1,64 @@
+---
+title: "Volt Europa X Climate Modelling"
+subtitle: "A website to replicate the work of Volt Europa on climate modelling"
+---
+
+<div style="text-align: center; min-width: 100%;">
+<img src="assets/eu-planet.png" alt="Europa" width="400" style="width: max-content;"/>
+</div>
+
+
+This small website aims to replicate and extend the works from Volt Europa on assessing how fast one should decrease our emissions.
+
+The github repo hosting the information [can be found here](https://github.com/FelixBenning/EmissionModel/tree/master)
+
+
+# IPCC Data
+
+The IPCC Report has the following conclusions:
+
+
+|    | Percent Chance to reach Goal   |   Total Carbon Budget |   Degree Target |
+|---:|:-------------------------------|----------------------:|----------------:|
+|  0 | 17%                            |                   900 |             1.5 |
+|  1 | 17%                            |                  1450 |             1.7 |
+|  2 | 17%                            |                  2300 |             1.8 |
+|  3 | 33%                            |                   650 |             1.5 |
+|  4 | 33%                            |                  1050 |             1.7 |
+|  5 | 33%                            |                  1700 |             1.8 |
+|  6 | 50%                            |                   500 |             1.5 |
+|  7 | 50%                            |                   850 |             1.7 |
+|  8 | 50%                            |                  1350 |             1.8 |
+|  9 | 67%                            |                   400 |             1.5 |
+| 10 | 67%                            |                   700 |             1.7 |
+| 11 | 67%                            |                  1150 |             1.8 |
+| 12 | 83%                            |                   300 |             1.5 |
+| 13 | 83%                            |                   550 |             1.7 |
+| 14 | 83%                            |                   900 |             1.8 |
+
+Or in a more compact form:
+
+| Degrees | 17% |33% |50% |67% |83% |
+|:--:|:--:|:--:|:--:|:--:|:--:|
+| 1.5 | 900 |650 |500 |400 |300 |
+| 1.7 | 1450 |1050 |850 |700 |550 |
+|1.8 | 2300 |1700 |1350 |1150 |900 |
+
+
+## Data analysis
+
+Please check out the [Data page](/data.html)
+
+## Modelling choices
+
+### Derivations and variables
+
+See the [Definitions pages](/definitions.html)
+
+### Model
+
+See the [Model page](#/model)
+
+### Results
+
+See the [Results page](#/results)

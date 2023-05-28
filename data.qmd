@@ -1,0 +1,77 @@
+---
+title: Data & Analysis
+date: today
+---
+
+# Source
+
+The data comes from IPCC reports and has been gathered 
+from the [IPCC's website](https://www.ipcc.ch/site/assets/uploads/2018/02/WG1AR5_Chapter08_FINAL.pdf)
+
+# Data
+
+## Raw data
+
+### Volt gathered data
+
+Here's the original data from the Volt Repo: (Unit= GtCO2)
+```{python}
+#| width: 100%
+#| tab-view: auto
+#| label: Volt gathered data
+
+import pandas as pd
+
+df = pd.read_json("https://storage.googleapis.com/open.data.arnov.dev/volt/climate/data/ipcc-data.json")
+df
+```
+
+### IPCC source data
+
+Now the data straight from the IPCC: (Unit= GtCO2)
+
+```{python}
+#| label: IPCC Source data (Unit= GtCO2)
+
+import pandas as pd
+
+data = pd.read_json("https://storage.googleapis.com/open.data.arnov.dev/volt/climate/data/ipcc-table.json", orient='table')
+data
+```
+
+### IPCC Annual emissions per country
+
+```{python}
+#| width: 100%
+#| tab-view: auto
+#| label: Annual Emissions data 
+
+import pandas as pd
+
+
+df = pd.read_csv("https://storage.googleapis.com/open.data.arnov.dev/volt/climate/data/annual-co2-emissions-per-country.csv")
+df
+```
+
+## Distribution of IPCC projections
+
+```{python}
+#| width: 100%
+#| tab-view: auto
+#| label: Fitting to percent chance data
+
+import pandas as pd
+
+columns = [
+    'Budget',	'Degree', 'name', 'score',
+    'bootstrap_score', 'bootstrap_pass',
+    'loc', 'scale', 'arg'
+    ]
+
+
+df = pd.read_csv("https://storage.googleapis.com/open.data.arnov.dev/volt/climate/data/fit-percent-goal-results.csv.zip")
+df[columns].dropna(subset=['name']).style \
+    .apply(lambda row: row['color'], axis=1, subset=['bootstrap_pass']) \
+    .apply(lambda color: f'background-color: {color}', axis=1) \
+    .set_caption('Distribution of IPCC projections')
+```
